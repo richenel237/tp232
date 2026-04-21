@@ -1,15 +1,19 @@
 from flask import Flask, request
 import mysql.connector
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 
 def get_db():
+    url = "mysql://root:kCpZknHrbmtmexzErrsBJXlbyvkuuqKb@roundhouse.proxy.rlwy.net:28464/railway"
+    result = urlparse(url)
+
     return mysql.connector.connect(
-        host="127.0.0.1",
-        user="root",  
-        password="bobo",
-        port=3307, 
-        database="school"
+        host=result.hostname,
+        user=result.username,
+        password=result.password,
+        port=result.port,
+        database=result.path.lstrip("/")
     )
 
 STYLE = """
@@ -142,11 +146,11 @@ def submit():
     matricule = request.form["matricule"]
     nom = request.form["nom"]
     filiere = request.form["filiere"]
-    mgp = request.form["mgp"]
+    note = request.form["mgp"]
     niveau = request.form["niveau"]
 
-    sql = "INSERT INTO students (matricule, nom, filiere, mgp, niveau) VALUES (%s, %s, %s, %s, %s)"
-    values = (matricule, nom, filiere, mgp, niveau)
+    sql = "INSERT INTO students (matricule, nom, filiere, note, niveau) VALUES (%s, %s, %s, %s, %s)"
+    values = (matricule, nom, filiere, note, niveau)
 
     cursor.execute(sql, values)
     db.commit()
@@ -158,7 +162,7 @@ def data():
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute("SELECT matricule, nom, filiere, mgp, niveau FROM students")
+    cursor.execute("SELECT matricule, nom, filiere, note, niveau FROM students")
     rows = cursor.fetchall()
 
     table = ""
